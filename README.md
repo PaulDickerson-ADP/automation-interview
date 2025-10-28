@@ -13,7 +13,7 @@ This app is designed to assess a candidate's ability to write end-to-end (E2E) a
    ```
 2. Run the sample test:
    ```sh
-   npx cucumber-js --require-module ts-node/register --require src/steps/**/*.ts features
+   npm test
    ```
 
 ## Project Structure
