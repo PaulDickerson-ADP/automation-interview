@@ -40,7 +40,8 @@ function checkAntiPatterns() {
         if (baseName.includes('_steps') && baseName.split('_').length > 2) {
           addFileIssue(fileIssues, file, 'Feature-Coupled Naming', 
             `File named after specific feature instead of domain concept`, 
-            `Rename to domain concepts like 'user_steps.ts'`);
+            `Rename to domain concepts like 'user_steps.ts'`,
+            `Feature-coupled step definitions can't be reused across features or scenarios. This leads to code duplication, explosion of step definitions, and high maintenance costs.`);
           cleanFiles.delete(file);
           warningCount++;
         }
@@ -67,7 +68,8 @@ function checkAntiPatterns() {
             if (filePath) {
               addFileIssue(fileIssues, filePath, 'Conjunction Steps', 
                 `Line ${lineNum}: Multiple actions in single step`, 
-                `Split into atomic steps using 'And' between lines`);
+                `Split into atomic steps using 'And' between lines`,
+                `Conjunction steps combine multiple actions, making them too specialized and hard to reuse. Cucumber has built-in support for 'And' and 'But' for a reason - use them to keep steps atomic.`);
               cleanFiles.delete(filePath);
               warningCount++;
             }
@@ -100,7 +102,8 @@ function checkAntiPatterns() {
             if (filePath) {
               addFileIssue(fileIssues, filePath, 'UI-Coupled Steps', 
                 `Line ${lineNum}: References visual/layout details`, 
-                `Focus on behavior, use data-testid selectors`);
+                `Focus on behavior, use data-testid selectors`,
+                `UI-coupled steps break when visual design changes (colors, positions, layouts). They make tests brittle and tie business scenarios to implementation details rather than user intent.`);
               cleanFiles.delete(filePath);
               warningCount++;
             }
@@ -132,7 +135,8 @@ function checkAntiPatterns() {
             if (filePath) {
               addFileIssue(fileIssues, filePath, 'Imperative Steps', 
                 `Line ${lineNum}: Describes HOW instead of WHAT`, 
-                `Use declarative language focusing on business intent`);
+                `Use declarative language focusing on business intent`,
+                `Imperative steps describe the mechanics of interaction rather than business intent. They make scenarios harder to read, less maintainable, and couple tests to specific UI implementations.`);
               cleanFiles.delete(filePath);
               warningCount++;
             }
@@ -165,7 +169,8 @@ function checkAntiPatterns() {
             if (filePath) {
               addFileIssue(fileIssues, filePath, 'Technical Details', 
                 `Line ${lineNum}: Excessive implementation details in scenario`, 
-                `Keep scenarios business-focused, hide tech details in step implementations`);
+                `Keep scenarios business-focused, hide tech details in step implementations`,
+                `Business scenarios should be readable by non-technical stakeholders. Technical details (DOM, network requests, animations) belong in step implementations, not in the business-readable feature files.`);
               cleanFiles.delete(filePath);
               warningCount++;
             }
@@ -205,19 +210,37 @@ function checkAntiPatterns() {
         const issueNum = `${index + 1}.`.padEnd(3);
         const issueType = issue.type.padEnd(20);
         const remainingWidth = TABLE_WIDTH - 28; // Account for number, type, and separators
-        const description = issue.description.length > remainingWidth ? 
-          issue.description.substring(0, remainingWidth - 3) + '...' : 
-          issue.description.padEnd(remainingWidth);
         
-        console.log(`│ ${issueNum}${issueType} │ ${description} │`);
+        const descriptionLines = wrapText(issue.description, remainingWidth, '');
+        descriptionLines.forEach((line, lineIndex) => {
+          if (lineIndex === 0) {
+            console.log(`│ ${issueNum}${issueType} │ ${line} │`);
+          } else {
+            console.log(`│ ${' '.repeat(23)} │ ${line} │`);
+          }
+        });
         
-        // Solution line
+        // Why lines
+        const whyWidth = TABLE_WIDTH - 10; // Account for "WHY: " and borders
+        const whyLines = wrapText(issue.why, whyWidth, '');
+        whyLines.forEach((line, lineIndex) => {
+          if (lineIndex === 0) {
+            console.log(`│   WHY: ${line} │`);
+          } else {
+            console.log(`│       ${line} │`);
+          }
+        });
+        
+        // Solution lines
         const solutionWidth = TABLE_WIDTH - 14; // Account for "SOLUTION: " and borders
-        const solution = issue.solution.length > solutionWidth ? 
-          issue.solution.substring(0, solutionWidth - 3) + '...' : 
-          issue.solution.padEnd(solutionWidth);
-        
-        console.log(`│   SOLUTION: ${solution} │`);
+        const solutionLines = wrapText(issue.solution, solutionWidth, '');
+        solutionLines.forEach((line, lineIndex) => {
+          if (lineIndex === 0) {
+            console.log(`│   SOLUTION: ${line} │`);
+          } else {
+            console.log(`│           ${line} │`);
+          }
+        });
         
         if (index < issues.length - 1) {
           console.log('│' + ' '.repeat(TABLE_WIDTH) + '│');
@@ -251,10 +274,17 @@ function checkAntiPatterns() {
   console.log('\n' + HEADER_BORDER);
   if (warningCount === 0) {
     console.log('🎉 EXCELLENT! No anti-patterns detected across all files.');
+    console.log('Your code follows Cucumber best practices for maintainable BDD automation.');
   } else {
     console.log(`⚠️  SUMMARY: Found ${warningCount} anti-pattern issue(s) across ${Object.keys(fileIssues).length} file(s).`);
     console.log(`✅ CLEAN: ${cleanFiles.size} file(s) follow best practices.`);
-    console.log('\n📚 Learn more: https://cucumber.io/docs/guides/anti-patterns/');
+    console.log('\n� TIPS FOR SUCCESS:');
+    console.log('   • Focus on business behavior, not UI implementation details');
+    console.log('   • Keep steps atomic and reusable across multiple scenarios');  
+    console.log('   • Use declarative language (WHAT) rather than imperative (HOW)');
+    console.log('   • Organize steps by domain concepts, not by features');
+    console.log('   • Hide technical details in step implementations, not scenarios');
+    console.log('\n📚 Official Guide: https://cucumber.io/docs/guides/anti-patterns/');
   }
   console.log(HEADER_BORDER);
 }
@@ -276,14 +306,15 @@ function getAllFiles(dirPath, arrayOfFiles = []) {
 }
 
 // Helper function to add issue to file tracking
-function addFileIssue(fileIssues, filePath, type, description, solution) {
+function addFileIssue(fileIssues, filePath, type, description, solution, why) {
   if (!fileIssues[filePath]) {
     fileIssues[filePath] = [];
   }
   fileIssues[filePath].push({
     type,
     description,
-    solution
+    solution,
+    why
   });
 }
 
@@ -294,6 +325,40 @@ function parseGrepOutput(grepLine) {
     return [match[1], match[2], match[3].trim()];
   }
   return [null, null, null];
+}
+
+// Helper function to wrap text to multiple lines
+function wrapText(text, maxWidth, prefix = '') {
+  const words = text.split(' ');
+  const lines = [];
+  let currentLine = '';
+  
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    if (testLine.length <= maxWidth) {
+      currentLine = testLine;
+    } else {
+      if (currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        // Word is longer than max width, just add it
+        lines.push(word);
+      }
+    }
+  }
+  
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+  
+  return lines.map((line, index) => {
+    if (index === 0) {
+      return `${prefix}${line.padEnd(maxWidth)}`;
+    } else {
+      return `${' '.repeat(prefix.length)}${line.padEnd(maxWidth)}`;
+    }
+  });
 }
 
 checkAntiPatterns();

@@ -1,5 +1,4 @@
-Feature: User Profile Management (GOOD EXAMPLE)
-  # Good: Business-focused, readable scenarios
+Feature: User Profile Management
 
   Scenario: User updates their profile information
     Given I am logged in as a user
@@ -17,14 +16,12 @@ Feature: User Profile Management (GOOD EXAMPLE)
     And I save my profile changes
     Then my profile should be updated successfully
 
-  # Good: Focused on business value, not implementation
   Scenario: Profile data persists after session
     Given I have a user account
     And I have updated my profile information
     When I log out and log back in
     Then my profile information should be preserved
 
-  # Good: Uses parameters for reusability
   Scenario Outline: User updates different profile fields
     Given I am logged in as a user
     And I am on the user profile page
@@ -38,7 +35,6 @@ Feature: User Profile Management (GOOD EXAMPLE)
       | email | john.smith@test.com |
       | phone | 555-9876           |
 
-  # Good: Business rule focused
   Scenario: User cannot save profile with invalid email
     Given I am logged in as a user
     And I am on the user profile page

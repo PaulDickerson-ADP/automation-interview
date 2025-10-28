@@ -1,7 +1,5 @@
-Feature: Profile Management (BAD EXAMPLE)
-  # Anti-pattern: Feature-coupled and overly specific scenarios
+Feature: Profile Management
 
-  # Anti-pattern: Conjunction steps in the feature file
   Scenario: Update user profile information and verify changes and check notifications
     Given I have a user profile and I am on the profile management page
     When I update my name and email and phone number
@@ -9,7 +7,6 @@ Feature: Profile Management (BAD EXAMPLE)
     Then I should see my updated profile information displayed correctly on the profile management page
     And I should see a green success notification in the top right corner
 
-  # Anti-pattern: UI-coupled scenarios
   Scenario: Navigate through profile management using specific UI elements
     Given I click on the "Profile" tab in the left sidebar
     And I see the profile form with a white background and blue borders
@@ -18,7 +15,6 @@ Feature: Profile Management (BAD EXAMPLE)
     And I click the green "Save Changes" button with the checkmark icon
     Then I should see the success message appear with a fade-in animation
 
-  # Anti-pattern: Too many implementation details
   Scenario: Validate profile data persistence after browser refresh
     Given I am logged in as user "testuser@example.com" with password "Test123!"
     And I navigate to "https://example.com/profile/edit" via URL bar
@@ -30,7 +26,6 @@ Feature: Profile Management (BAD EXAMPLE)
     Then I should verify that the DOM contains "Johnny" in the #firstName input field
     And I should verify that the DOM contains "Smith" in the #lastName input field
 
-  # Anti-pattern: Feature-coupled scenario with business logic in steps
   Scenario: Profile management workflow with account validation and email confirmation
     Given I have an active account with premium subscription status
     And I have verified my email address through the confirmation link
